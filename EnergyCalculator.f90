@@ -1,17 +1,18 @@
 !######################################################################################################
 ! Module EnergyCalculatorModule
 ! Fonctions :
-!   compute_potential_energy : calcule l'énergie potentielle entre 2 particules en prenant en compte
+!   compute_potential_energy : calcul l'énergie potentielle entre 2 particules en prenant en compte
 !                              un potentiel tronqué. Si r > r_truncated, le potentiel est nul
 !                              sinon on calcule le potentiel de Lennard-Jones en shiftant le potentiel de
 !                              potential_shift. Le potential_shift passé en paramètre est calculé
 !                              de manière à ce que le potenitel soit continu en r_truncated.
 !
-!   compute_sum_potential_energy : calcule l'énergie potentielle du système
+!   compute_sum_potential_energy : calcul l'énergie potentielle du système
 !
-!   compute_sum_kinetic_energy : calcule l'énergie cinétique du système
+!   compute_sum_kinetic_energy : calcul l'énergie cinétique du système
 !
-!
+!   compute_temperature : calcul de la température Ec = N * kb * T en 2D en unité réduite kb = 1
+!                                                  T = Ec /N
 !######################################################################################################
 
 module EnergyCalculatorModule
@@ -61,6 +62,7 @@ contains
              end do
 
         end do
+
     end function
 
     function compute_sum_kinetic_energy(velocities, nb_particle)
@@ -72,9 +74,19 @@ contains
         compute_sum_kinetic_energy = 0.0d0
 
         do i = 1, nb_particle
-             compute_sum_kinetic_energy = compute_sum_kinetic_energy + &
-                                          0.5d0 * ((velocities(i)%x **2) + (velocities(i)%y ** 2))
+             compute_sum_kinetic_energy = compute_sum_kinetic_energy + 0.5d0 * ((velocities(i)%x **2) + (velocities(i)%y ** 2))
         end do
+
+        compute_sum_kinetic_energy = compute_sum_kinetic_energy
+
+    end function
+
+    function compute_temperature(kinetic_energy, nb_particle)
+        integer(kind=4), intent(in) :: nb_particle
+        real(kind=8), intent(in) :: kinetic_energy
+        real(kind=8) :: compute_temperature
+
+        compute_temperature = kinetic_energy / (real(nb_particle,8))
 
     end function
 

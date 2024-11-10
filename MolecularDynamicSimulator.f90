@@ -23,6 +23,8 @@ module MolecularDynamicSimulatorModule
     Use EnergyCalculatorModule
     use ForceCalculatorModule, only : ForceCalculator
     use VelocityVerletPropagatorModule, only : VelocityVerletPropagator
+    use SimulationResultModule
+    use GridPrinterModule
     implicit none
 
     type, public :: MolecularDynamicSimulator
@@ -48,9 +50,10 @@ contains
         integer(kind=4), intent(in) :: nb_particle,  nb_time_step
         type(Point2D), dimension(nb_particle), intent(in):: initial_positions, initial_velocities
         real(kind=8), intent(in) :: delta_t
-        real(kind=8), dimension(nb_time_step + 1) :: run
-        real(kind=8), dimension(nb_time_step + 1) :: kinetic_energy, potential_energy, total_energy
-        integer(kind=4) i, j
+        type(SimulationResult) :: run
+        real(kind=8), dimension(nb_time_step + 1) :: kinetic_energy, potential_energy,&
+                                                     total_energy, temperature, time
+        integer(kind=4) i, j, r
 
         type(Point2D), dimension(nb_particle):: positions_i, velocities_i
         type(Point2D), dimension(nb_particle) :: positions_i_plus_1, velocities_i_plus_1
@@ -59,6 +62,7 @@ contains
         type(VelocityVerletPropagator) :: propagator
         type(ForceCalculator) :: force_calculator
         real(kind=8) :: half_box_size, potential_shift
+        character(len=100), allocatable :: file_name_pos
 
         positions_i = initial_positions
         velocities_i = initial_velocities
@@ -70,10 +74,15 @@ contains
         call propagator%initialize(this%box_size, delta_t)
         call force_calculator%initialize(this%box_size, this%r_truncated)
 
+
+        time(1) = 0.0d0
         kinetic_energy(1) = compute_sum_kinetic_energy(velocities_i, nb_particle)
         potential_energy(1) = compute_sum_potential_energy(positions_i, nb_particle, this%box_size, half_box_size, &
-                                                           this%r_truncated, potential_shift)
+                                                            this%r_truncated, potential_shift)
+
         total_energy(1) = kinetic_energy(1) + potential_energy(1)
+        temperature(1) = compute_temperature(kinetic_energy(1), nb_particle)
+        file_name_pos  = ''
 
         do i = 1, nb_time_step
 
@@ -93,22 +102,37 @@ contains
 
             end do
 
+            time(i+1) = delta_t * real(i,8)
             kinetic_energy(i+1) = compute_sum_kinetic_energy(velocities_i_plus_1, nb_particle)
 
-            potential_energy(i+1) = compute_sum_potential_energy(positions_i_plus_1, nb_particle, this%box_size, &
-                                                                 half_box_size, this%r_truncated, potential_shift )
+            potential_energy(i+1) = compute_sum_potential_energy(positions_i_plus_1, nb_particle, this%box_size, half_box_size, &
+                                                                   this%r_truncated, potential_shift)
 
             total_energy(i+1) = kinetic_energy(i+1) + potential_energy(i+1)
+            temperature(i+1) = compute_temperature(kinetic_energy(i+1), nb_particle)
 
             positions_i =  positions_i_plus_1
             velocities_i = velocities_i_plus_1
 
+            if (mod(i,1000) ==1) then
+                write(file_name_pos, '(A,I6.6,A)') '..\position\\Position_dt', i,'.dat'
+                open(i*113, file = trim(file_name_pos), status = 'replace')
+                do r=1, size(positions_i)
+                    write(i*113,*) positions_i(r)
+                end do
+                print*, i
+                print*, temperature(i+1)
+
+            end if
+            close(i*113)
         end do
 
-        print*, total_energy(nb_time_step+1) - total_energy(1)
-        print*, kinetic_energy(nb_time_step+1) - kinetic_energy(1)
-
-        run = total_energy
+        run%nb_time = nb_time_step + 1
+        run%time = time
+        run%potential_energy = potential_energy
+        run%kinetic_energy = kinetic_energy
+        run%total_energy = total_energy
+        run%temperature = temperature
 
     end function
 
