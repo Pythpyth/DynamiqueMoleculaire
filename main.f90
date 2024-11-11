@@ -78,8 +78,8 @@ program MolecularDynamicSimulation
     !initialisation des conditions initiales
     do i = 1, nb_particle_per_dim
         do j = 1, nb_particle_per_dim
-            initial_positions(j + (i-1) * nb_particle_per_dim)%x = -5.5d0 + real(i,8) * 1.0d0
-            initial_positions(j + (i-1) * nb_particle_per_dim)%y = -5.5d0 + real(j,8) * 1.0d0
+            initial_positions(j + (i-1) * nb_particle_per_dim)%x = -6.0d0 + real(i,8) * 1.0d0
+            initial_positions(j + (i-1) * nb_particle_per_dim)%y = -6.0d0 + real(j,8) * 1.0d0
 
             u1 =  uniform_random_generator%generate()
             u2 =  uniform_random_generator%generate()
