@@ -11,11 +11,14 @@
 !
 ! fonctions :
 !
-! compute_sum_forces_on_reference_particle : calcule la somme des forces sur la particule d'indice
+! compute_sum_forces_on_reference_particle : calcul la somme des forces sur la particule d'indice
 !                                            position_reference_index dans le vecteur des particules
 !
-! compute_force_on_reference_particle : calcule la force exercée par la particule en position_2
+! compute_force_on_reference_particle : calcul la force exercée par la particule en position_2
 !                                       sur la particule en position_reference
+!
+! compute_force_scalar_distance_on_reference_particle : calcul le produit scalaire Fij . rij
+!
 !
 !######################################################################################################
 
@@ -31,7 +34,9 @@ module ForceCalculatorModule
         real(kind=8) :: half_box_size
         real(kind=8) :: r_truncated
     contains
-        procedure, public :: initialize, compute_sum_forces_on_reference_particle
+        procedure, public :: initialize, compute_sum_forces_on_reference_particle , &
+        compute_force_scalar_distance_on_reference_particle
+
     end type ForceCalculator
 
 contains
@@ -98,6 +103,29 @@ contains
             y_force = common_component * (position_reference%y - closest_image_position_2%y)
 
             compute_force_on_reference_particle = Point2D(x_force, y_force)
+
+        end if
+
+    end function
+
+
+     function compute_force_scalar_distance_on_reference_particle(this, position_reference, position_2)
+        class(ForceCalculator), intent(in) :: this
+        type(Point2D),  intent(in):: position_reference, position_2
+        real(kind=8) :: compute_force_scalar_distance_on_reference_particle
+        type(Point2D) :: closest_image_position_2
+        real(kind=8) :: distance
+
+        closest_image_position_2 = compute_closest_image_position_2(&
+        position_reference, position_2, this%half_box_size, this%box_size)
+
+        distance = compute_distance(position_reference, closest_image_position_2)
+
+        if (distance.gt.this%r_truncated) then
+            compute_force_scalar_distance_on_reference_particle = 0.0d0
+        else
+
+            compute_force_scalar_distance_on_reference_particle = 48.0d0 * (distance ** (-12)) - 24.0d0 * (distance ** (-6))
 
         end if
 

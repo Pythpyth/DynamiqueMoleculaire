@@ -4,6 +4,7 @@
 ! membres :
 !       real(kind=8) :: box_size        : la taille de la boite
 !       real(kind=8) :: r_truncated     : le rayon de coupure
+!       real(kind=8) :: potential_shift : le shift du potentiel
 !
 ! subroutine :
 !       initialize : initialiser les membres
@@ -31,19 +32,20 @@ module MolecularDynamicSimulatorModule
         private
         real(kind=8) :: box_size
         real(kind=8) :: r_truncated
+        real(kind=8) :: potential_shift
     contains
         procedure, public :: initialize, run
     end type MolecularDynamicSimulator
 
 contains
 
-    subroutine initialize(this, box_size, r_truncated)
+    subroutine initialize(this, box_size, r_truncated, potential_shift)
         class(MolecularDynamicSimulator), intent(inout) :: this
-        real(kind=8), intent(in) :: box_size, r_truncated
+        real(kind=8), intent(in) :: box_size, r_truncated, potential_shift
         this%box_size = box_size
         this%r_truncated = r_truncated
+        this%potential_shift = potential_shift
     end subroutine
-
 
     function run(this, initial_positions, initial_velocities, nb_particle, delta_t, nb_time_step)
         class(MolecularDynamicSimulator), intent(in) :: this
@@ -52,7 +54,7 @@ contains
         real(kind=8), intent(in) :: delta_t
         type(SimulationResult) :: run
         real(kind=8), dimension(nb_time_step + 1) :: kinetic_energy, potential_energy,&
-                                                     total_energy, temperature, time
+                                                     total_energy, temperature, time, pressure
         integer(kind=4) i, j, r
 
         type(Point2D), dimension(nb_particle):: positions_i, velocities_i
@@ -61,15 +63,15 @@ contains
         type(Point2D) :: forces_i_plus_1
         type(VelocityVerletPropagator) :: propagator
         type(ForceCalculator) :: force_calculator
-        real(kind=8) :: half_box_size, potential_shift
+        real(kind=8) :: half_box_size
         character(len=100), allocatable :: file_name_pos
+        logical :: is_all_particle_in_box_boolean
+        integer, parameter :: distribution_size = 10
+        real(kind=8), dimension(distribution_size) :: radial_distribution
 
         positions_i = initial_positions
         velocities_i = initial_velocities
         half_box_size = this%box_size / 2.0d0
-
-        !calcul du shift pour assurer la continuité du potentiel en r_truncated
-        potential_shift = 4.0d0 * ( (this%r_truncated ** (-12)) - (this%r_truncated ** (-6)) )
 
         call propagator%initialize(this%box_size, delta_t)
         call force_calculator%initialize(this%box_size, this%r_truncated)
@@ -78,10 +80,12 @@ contains
         time(1) = 0.0d0
         kinetic_energy(1) = compute_sum_kinetic_energy(velocities_i, nb_particle)
         potential_energy(1) = compute_sum_potential_energy(positions_i, nb_particle, this%box_size, half_box_size, &
-                                                            this%r_truncated, potential_shift)
+                                                            this%r_truncated, this%potential_shift)
 
         total_energy(1) = kinetic_energy(1) + potential_energy(1)
         temperature(1) = compute_temperature(kinetic_energy(1), nb_particle)
+        pressure(1) = compute_pressure(positions_i, nb_particle, this%box_size, temperature(1), force_calculator)
+
         file_name_pos  = ''
 
         do i = 1, nb_time_step
@@ -106,10 +110,12 @@ contains
             kinetic_energy(i+1) = compute_sum_kinetic_energy(velocities_i_plus_1, nb_particle)
 
             potential_energy(i+1) = compute_sum_potential_energy(positions_i_plus_1, nb_particle, this%box_size, half_box_size, &
-                                                                   this%r_truncated, potential_shift)
+                                                                   this%r_truncated, this%potential_shift)
 
             total_energy(i+1) = kinetic_energy(i+1) + potential_energy(i+1)
             temperature(i+1) = compute_temperature(kinetic_energy(i+1), nb_particle)
+            pressure(i+1) = compute_pressure(positions_i_plus_1, nb_particle, this%box_size, temperature(i+1), &
+                                             force_calculator)
 
             positions_i =  positions_i_plus_1
             velocities_i = velocities_i_plus_1
@@ -121,10 +127,28 @@ contains
                     write(i*113,*) positions_i(r)
                 end do
                 print*, i
-                print*, temperature(i+1)
+
+                is_all_particle_in_box_boolean = is_all_particle_in_box(positions_i_plus_1,nb_particle, half_box_size)
+
+                if (.not. is_all_particle_in_box_boolean) then
+                    print* , 'a particule is out of the box'
+                end if
+
+                radial_distribution = &
+                compute_radial_distribution(positions_i, nb_particle, half_box_size, this%box_size, distribution_size)
+
+                write(file_name_pos, '(A,I6.6,A)') '..\Distribution\\distribution_dt', i,'.dat'
+                open(i*112, file = trim(file_name_pos), status = 'replace')
+
+                do r=1, distribution_size
+                    write(i*112,*) radial_distribution(r)
+                end do
+
+                close(i*112)
 
             end if
             close(i*113)
+
         end do
 
         run%nb_time = nb_time_step + 1
@@ -133,7 +157,7 @@ contains
         run%kinetic_energy = kinetic_energy
         run%total_energy = total_energy
         run%temperature = temperature
-
+        run%pressure = pressure
     end function
 
 end module MolecularDynamicSimulatorModule

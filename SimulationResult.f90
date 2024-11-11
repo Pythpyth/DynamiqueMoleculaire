@@ -9,6 +9,7 @@
 !      real(kind=8), dimension(:), allocatable :: potential_energy : tableau contenant l'énergie potentielle à chaque temps de la simulation
 !      real(kind=8), dimension(:), allocatable :: total_energy : tableau contenant l'énergie totale à chaque temps de la simulation
 !      real(kind=8), dimension(:), allocatable :: temperature : tableau contenant la température à chaque temps de la simulation
+!      real(kind=8), dimension(:), allocatable :: pressure: tableau contenant la pression à chaque temps de la simulation
 !
 ! subroutine :
 !       terminate : désallocation des tableaux
@@ -27,6 +28,7 @@ module SimulationResultModule
         real(kind=8), dimension(:), allocatable :: potential_energy
         real(kind=8), dimension(:), allocatable :: total_energy
         real(kind=8), dimension(:), allocatable :: temperature
+        real(kind=8), dimension(:), allocatable :: pressure
     contains
         procedure, public :: terminate
     end type SimulationResult
@@ -38,6 +40,7 @@ contains
         deallocate(this%potential_energy)
         deallocate(this%total_energy)
         deallocate(this%temperature)
+        deallocate(this%pressure)
     end subroutine
 
 end module SimulationResultModule

@@ -45,5 +45,72 @@ contains
 
     end function
 
+
+    function is_all_particle_in_box(positions, nb_particle, half_box_size)
+        integer(kind=4), intent(in) :: nb_particle
+        type(Point2D), dimension(nb_particle) ::  positions
+        real(kind=8), intent(in):: half_box_size
+        logical :: is_all_particle_in_box
+        integer :: i
+        is_all_particle_in_box = .true.
+
+        do i =1, nb_particle
+
+            if( abs(positions(i)%x) > half_box_size ) then
+                is_all_particle_in_box = .false.
+                exit
+            end if
+
+            if( abs(positions(i)%y) > half_box_size ) then
+                is_all_particle_in_box = .false.
+                exit
+            end if
+
+        end do
+
+    end function
+
+
+    function compute_radial_distribution(positions, nb_particle, half_box_size, box_size, distribution_size)
+
+        integer(kind=4), intent(in) :: nb_particle
+        real(kind=8), intent(in):: box_size, half_box_size
+        integer, intent(in) :: distribution_size
+        type(Point2D), dimension(nb_particle), intent(in) :: positions
+        real(kind=8) :: compute_sum_potential_energy
+        real(kind=8), dimension(nb_particle) :: compute_radial_distribution
+        real(kind=8) :: delta_r, distance
+        integer(kind=4) :: i,j, domaine_index
+        type(Point2D) :: closest_image_position_j
+
+        compute_sum_potential_energy = 0.0d0
+        delta_r = half_box_size / real(distribution_size, 8)
+
+        do i = 1, distribution_size
+            compute_radial_distribution(i) = 0.0d0
+        end do
+
+        do i = 1, nb_particle
+
+             do j = i + 1, nb_particle
+
+                closest_image_position_j = compute_closest_image_position_2(positions(i), positions(j), &
+                                                                             half_box_size, box_size)
+
+                distance = compute_distance(positions(i), closest_image_position_j)
+
+                if (distance < half_box_size) then
+                    ! Calculer l'indice du domaine correspondant
+                    domaine_index = int(distance / delta_r) + 1  ! car indices en Fortran commencent à 1
+                    compute_radial_distribution(domaine_index) = &
+                    compute_radial_distribution(domaine_index) + 1.0d0  ! Compter la paire (i, j) pas besoin de compter (j,i) car identique
+                end if
+
+             end do
+
+        end do
+
+    end function
+
 end module DistanceCalculatorModule
 
