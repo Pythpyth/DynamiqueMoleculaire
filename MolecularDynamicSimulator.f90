@@ -12,8 +12,7 @@
 ! fonctions :
 !
 !   run : effectue la simulation en bouclant sur chaque pas de temps
-!         retourne pour le moment la liste des énergies totales à chaque temps, à regarder pour
-!         voir ce dont on aura besoin
+!         retourne un type(simulationresult) qui contient les observales de notre simulation
 !
 !
 !######################################################################################################
@@ -126,6 +125,8 @@ contains
                 do r=1, size(positions_i)
                     write(i*113,*) positions_i(r)
                 end do
+
+                close(i*113)
                 print*, i
 
                 is_all_particle_in_box_boolean = is_all_particle_in_box(positions_i_plus_1,nb_particle, half_box_size)
@@ -147,7 +148,7 @@ contains
                 close(i*112)
 
             end if
-            close(i*113)
+
 
         end do
 

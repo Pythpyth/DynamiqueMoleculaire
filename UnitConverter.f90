@@ -6,12 +6,13 @@
 !
 !   convert_reduced_unit_to_kelvin : T(K) = T(unité réduite) * epsilon Lennard-Jones(unité atomique) / kb(unité atomique par K)
 !
-!   convert_reduced_unit_to_second : t(unité atomic) = t(unité réduite) * racine(masse particule(unité atomique) *
+!   convert_list_reduced_unit_to_fs : t(unité atomic) = t(unité réduite) * racine(masse particule(unité atomique) *
 !                                                                       sigma Lennard-Jones(unité atomique)^2 /
 !                                                                       epsilon Lennard-Jones(unité atomique)^2)
 !                                    t(fs) =   t(unité atomic)  * atomic_time_to_fs
 !
-!
+!   convert_list_reduced_unit_to_newton_by_meter : P(N/m) = P(unité réduite) * epsilon Lennard-Jones (unité atomique)
+!                                                           / (sigma Lennard-Jones ^2)
 !
 !######################################################################################################
 

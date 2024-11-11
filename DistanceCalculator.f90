@@ -2,9 +2,14 @@
 ! Module DistanceCalculatorModule
 ! Fonctions :
 !   compute_distance : calcule la distance entre 2 particules
+!
 !   compute_closest_image_position_2 : on considère une position de référence et une position 2.
 !                                      la fonction retourne l’image périodique de la position 2 la plus
 !                                      proche de la position référence
+!
+!    is_all_particle_in_box : vérifie que toutes les particules sont dans la boite
+!
+!    compute_radial_distribution : calcul de la distribution radiale
 !
 !######################################################################################################
 
@@ -92,7 +97,7 @@ contains
 
         do i = 1, nb_particle
 
-             do j = i + 1, nb_particle
+             do j = i + 1, nb_particle ! Compter la paire (i, j) pas besoin de compter (j,i) car identique
 
                 closest_image_position_j = compute_closest_image_position_2(positions(i), positions(j), &
                                                                              half_box_size, box_size)
@@ -101,9 +106,9 @@ contains
 
                 if (distance < half_box_size) then
                     ! Calculer l'indice du domaine correspondant
-                    domaine_index = int(distance / delta_r) + 1  ! car indices en Fortran commencent à 1
+                    domaine_index = int(distance / delta_r) + 1
                     compute_radial_distribution(domaine_index) = &
-                    compute_radial_distribution(domaine_index) + 1.0d0  ! Compter la paire (i, j) pas besoin de compter (j,i) car identique
+                    compute_radial_distribution(domaine_index) + 1.0d0
                 end if
 
              end do

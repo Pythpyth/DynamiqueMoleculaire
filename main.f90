@@ -6,8 +6,9 @@
 ! Les particules les plus proches du bord de la boite sont à une distance de 0.5 du bord de la boite
 ! dans chaque dimension. On a ainsi une distance de 1 dans chaque dimension avec l'image dans l'image
 ! périodique d'une boite en contact.
-! On initialise les vitesses selon une loi normale centrée et d'écart-type 0.01 à regarder
+! On initialise les vitesses selon une loi normale centrée réduite puis ajustée pour obtenir la température T0
 !
+! Il faut créer un dossier '..\\Results', '..\Position', '..\Distribution'
 !######################################################################################################
 
 program MolecularDynamicSimulation
@@ -68,7 +69,6 @@ program MolecularDynamicSimulation
     real(kind=8), dimension(:), allocatable :: kinetic_energy, potential_energy, temperature, &
                                                 total_energy, time_list, pressure
     integer :: number_observable_from_t_ref
-
     logical :: is_validation_step
 
     ! initialisation du générateur aléatoire uniforme
@@ -118,7 +118,7 @@ program MolecularDynamicSimulation
     call molecular_dynamic_simulator%initialize(box_size, r_truncated, potential_shift)
 
 
-    is_validation_step = .false.
+    is_validation_step = .true.
 
     if (is_validation_step) then
         !Partie pour valider la relation ln|E(t*)-E(t0)| = a * ln(delta_t) + b

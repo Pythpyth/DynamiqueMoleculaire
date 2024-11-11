@@ -3,8 +3,9 @@
 ! Fonctions :
 !   compute_mean_observable_from_t_ref : calcul la moyenne temporelle d'un observable à partir du temps t_ref
 !
+!   compute_stdev_observable_from_t_ref : calcul de l'écart type temporelle d'un observable à partir du temps t_ref
 !
-!
+!  compute_number_observable_from_t_ref : calcule le nombre d'observale depuis t_ref
 !
 !######################################################################################################
 
