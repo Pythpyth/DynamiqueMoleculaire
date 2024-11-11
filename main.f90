@@ -149,6 +149,7 @@ program MolecularDynamicSimulation
     end if
 
 
+    !simulation
     time_end = 4.0d0
     delta_t = time_end / real(nb_time_step_simulation, 8)
 
@@ -204,25 +205,18 @@ program MolecularDynamicSimulation
 
     t_ref = 500.0d0 !en fs
 
+    ! calcul des valeurs moyennes et écart-types des observables
     mean_kinetic_energy = compute_mean_observable_from_t_ref(t_ref, time_list, kinetic_energy, nb_time_step_simulation + 1)
     mean_potential_energy = compute_mean_observable_from_t_ref(t_ref, time_list, potential_energy, nb_time_step_simulation + 1)
     mean_total_energy = compute_mean_observable_from_t_ref(t_ref, time_list, total_energy, nb_time_step_simulation + 1)
-
-
-
     mean_temperature = compute_mean_observable_from_t_ref(t_ref, time_list, temperature, nb_time_step_simulation + 1)
     mean_pressure = compute_mean_observable_from_t_ref(t_ref, time_list, pressure, nb_time_step_simulation + 1)
-
 
     stdev_kinetic_energy = compute_stdev_observable_from_t_ref(t_ref, time_list, kinetic_energy, nb_time_step_simulation + 1)
     stdev_potential_energy = compute_stdev_observable_from_t_ref(t_ref, time_list, potential_energy, nb_time_step_simulation + 1)
     stdev_total_energy = compute_stdev_observable_from_t_ref(t_ref, time_list, total_energy, nb_time_step_simulation + 1)
-
-
-
     stdev_temperature = compute_stdev_observable_from_t_ref(t_ref, time_list, temperature, nb_time_step_simulation + 1)
     stdev_pressure = compute_stdev_observable_from_t_ref(t_ref, time_list, pressure, nb_time_step_simulation + 1)
-
 
 
     print*, 'mean kinetic energy : ' , mean_kinetic_energy, ' eV'
@@ -231,11 +225,11 @@ program MolecularDynamicSimulation
     print*, 'mean temperature : ' , mean_temperature, ' K'
     print*, 'mean pressure : ' , mean_pressure, ' N/m'
 
-    print*, 'stdev kinetic energy : ' , stdev_kinetic_energy
-    print*, 'stdev potential energy : ' , stdev_potential_energy
-    print*, 'stdev total energy : ' , stdev_total_energy
-    print*, 'stdev pressure : ' , stdev_pressure
-    print*, 'stdev temperature : ' , stdev_temperature
+    print*, 'stdev kinetic energy : ' , stdev_kinetic_energy, ' eV'
+    print*, 'stdev potential energy : ' , stdev_potential_energy, ' eV'
+    print*, 'stdev total energy : ' , stdev_total_energy, ' eV'
+    print*, 'stdev pressure : ' , stdev_pressure, ' K'
+    print*, 'stdev temperature : ' , stdev_temperature, ' N/m'
 
 
     number_observable_from_t_ref = compute_number_observable_from_t_ref(t_ref, time_list, &
@@ -244,7 +238,7 @@ program MolecularDynamicSimulation
     print*, 'number_observable_from_t_ref  : ' , number_observable_from_t_ref
 
     !les écarts sont calculés sans prendre en compte l'autocorrélation
-    !3 écart-types => intervalle de confiance à 99.7%
+    !3 écarts-types => intervalle de confiance à 99.7%
     print*, 'kinetic energy confidence interval  ' , mean_kinetic_energy - &
                                                 3.0d0 * stdev_kinetic_energy / sqrt(real(number_observable_from_t_ref-1,8)) &
                                              , mean_kinetic_energy &
@@ -273,10 +267,10 @@ program MolecularDynamicSimulation
                                              , mean_temperature &
                                              + 3.0d0 * stdev_temperature / sqrt(real(number_observable_from_t_ref-1,8))
 
-    print* ,'temperature t0 ', temperature(1)
-    print* ,'temperature tend ', temperature(nb_time_step_simulation + 1)
-    print* ,'pressure t0 ', pressure(1)
-    print* ,'pressure tend ',pressure(nb_time_step_simulation + 1)
+    print* ,'temperature t0 ', temperature(1), ' K'
+    print* ,'temperature tend ', temperature(nb_time_step_simulation + 1), ' K'
+    print* ,'pressure t0 ', pressure(1), ' N/m'
+    print* ,'pressure tend ',pressure(nb_time_step_simulation + 1), ' N/m'
 
     result_file = "..\\Results\simulation_result.dat"
     call print_simulation_result(result_file, time_list, kinetic_energy, &
