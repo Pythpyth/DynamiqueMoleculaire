@@ -27,11 +27,11 @@ program MolecularDynamicSimulation
     ! t_ref : temps à partir duquel on calcul la moyenne temporelle
     real(kind=8) :: t_star, t_ref, time_end, delta_t
     real(kind=8), parameter :: r_truncated = 2.5d0
-    real(kind=8), parameter :: box_size = 10.0d0
-    integer(kind=4), parameter :: nb_particle_per_dim = 10
-    integer(kind=4), parameter  :: nb_particle = 100
+    real(kind=8), parameter :: box_size = 11.0d0
+    integer(kind=4), parameter :: nb_particle_per_dim = 11 !nombre de particules selon x et selon y
+    integer(kind=4), parameter  :: nb_particle = 121
 
-    integer(kind=4), parameter :: nb_time_step_simulation = 20000
+    integer(kind=4), parameter :: nb_time_step_simulation = 5000000
     integer(kind=4), parameter :: nb_time_step_for_validation = 5
     integer(kind=4), dimension(nb_time_step_for_validation) ::  &
     nb_time_steps = (/50, 100, 200, 400, 800/)
@@ -150,7 +150,7 @@ program MolecularDynamicSimulation
 
 
     !simulation
-    time_end = 4.0d0
+    time_end = 20.0d0
     delta_t = time_end / real(nb_time_step_simulation, 8)
 
 
