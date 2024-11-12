@@ -120,7 +120,7 @@ contains
             velocities_i = velocities_i_plus_1
 
             if (mod(i,1000) ==1) then
-                write(file_name_pos, '(A,I6.6,A)') '..\position\\Position_dt', i,'.dat'
+                write(file_name_pos, '(A,I7.7,A)') '..\position\\Position_dt', i,'.dat'
                 open(i*113, file = trim(file_name_pos), status = 'replace')
                 do r=1, size(positions_i)
                     write(i*113,*) positions_i(r)
@@ -138,7 +138,7 @@ contains
                 radial_distribution = &
                 compute_radial_distribution(positions_i, nb_particle, half_box_size, this%box_size, distribution_size)
 
-                write(file_name_pos, '(A,I6.6,A)') '..\Distribution\\distribution_dt', i,'.dat'
+                write(file_name_pos, '(A,I7.7,A)') '..\Distribution\\distribution_dt', i,'.dat'
                 open(i*112, file = trim(file_name_pos), status = 'replace')
 
                 do r=1, distribution_size
